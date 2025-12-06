@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"home/internal/sqlexport"
 	"os"
 	"os/exec"
 )
@@ -16,6 +17,10 @@ func main() {
 	}
 
 	service := os.Args[1] // 最初の引数 ("hms") を取得
+	command := ""
+	if len(os.Args) >= 3 {
+		command = os.Args[2]
+	}
 	var url string
 
 	// 引数に基づいて開くURLを決定
@@ -23,7 +28,15 @@ func main() {
 	case "hms":
 		url = "http://192.168.10.10/hms"
 	case "mp4": // 例として別のサービスを追加
-		url = "http://192.168.10.11/"
+		url = ""
+	case "hv":
+		if command == "insert" {
+			fmt.Printf("--- INFO: 'home hv insert' コマンドが検出されました。SQL生成処理を開始します。 ---\n")
+			// 外部ファイル（sqlexport.go）で定義された関数を呼び出す
+			sqlexport.GenerateInsertSQLs() 
+			return
+		}
+		url = "http://192.168.10.11/videos/v2/"
 	default:
 		fmt.Printf("Unknown service: %s\n", service)
 		return

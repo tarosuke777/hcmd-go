@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
-	"time"
 )
 
 // --- SQL生成処理用 定数と変数 ---
@@ -57,19 +56,24 @@ func GenerateInsertSQLs() {
 			return nil
 		}
 
+		// matches[1]: タイトル
+		// matches[2]: 日時 (例: 2025-09-13 18-06-25)
 		title := strings.TrimSpace(matches[1]) 
-		name := "" 
-		file_name := fileName
+		rawDate := matches[2]
+
+		// ファイル名の「時-分-秒」をSQL形式の「時:分:秒」に変換
+		// "2025-09-13 18-06-25" -> "2025-09-13 18:06:25"
+		dbDateTime := formatToSQLDateTime(rawDate)
 		
-		now := time.Now().Format("2006-01-02 15:04:05")
+		// now := time.Now().Format("2006-01-02 15:04:05")
 
 		insertSQL := fmt.Sprintf(
 			insertTemplate,
 			escapeSQL(title),
-			escapeSQL(name),
-			escapeSQL(file_name),
-			now,
-			now,
+			"", // name (空)
+			escapeSQL(fileName),
+			dbDateTime, // created_at
+			dbDateTime, // updated_at
 		)
 
 		fmt.Println(insertSQL)
@@ -86,6 +90,18 @@ func GenerateInsertSQLs() {
 		log.Fatalf("フォルダの走査中にエラーが発生しました: %v", err)
 	}
 	fmt.Printf("--- ログ: SQL生成処理が完了しました。---\n")
+}
+
+// ファイル名の日時形式(HH-mm-ss)をSQL形式(HH:mm:ss)に変換するヘルパー
+func formatToSQLDateTime(rawDate string) string {
+	// スペースで日付と時間を分ける
+	parts := strings.Split(rawDate, " ")
+	if len(parts) != 2 {
+		return rawDate
+	}
+	// 時間部分のハイフンをコロンに置換
+	timePart := strings.ReplaceAll(parts[1], "-", ":")
+	return parts[0] + " " + timePart
 }
 
 // シングルクォートをエスケープするヘルパー関数

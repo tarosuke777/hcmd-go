@@ -2,7 +2,8 @@ package main
 
 import (
 	"fmt"
-	"home/internal/sqlexport"
+	"home/internal/network"
+	"home/internal/scanner"
 	"os"
 	"os/exec"
 )
@@ -27,13 +28,20 @@ func main() {
 	switch service {
 	case "hms":
 		url = "http://192.168.10.10/hms"
-	case "mp4": // 例として別のサービスを追加
-		url = ""
 	case "hv":
 		if command == "insert" {
 			fmt.Printf("--- INFO: 'home hv insert' コマンドが検出されました。SQL生成処理を開始します。 ---\n")
 			// 外部ファイル（sqlexport.go）で定義された関数を呼び出す
-			sqlexport.GenerateInsertSQLs() 
+			scanner.GenerateInsertSQLs() 
+			return
+		}
+		if command == "magic" {
+			macAddress := os.Getenv("HV_MAC_ADDRESS")
+			fmt.Printf("--- INFO: %s へのマジックパケット送信を開始します ---\n", macAddress)
+			err := network.SendMagicPacket(macAddress)
+			if err != nil {
+				fmt.Printf("Error sending magic packet: %v\n", err)
+			}
 			return
 		}
 		url = "http://192.168.10.11/videos/v2/"

@@ -1,4 +1,4 @@
-package sqlexport // main.goと同じパッケージ名
+package scanner
 
 import (
 	"fmt"

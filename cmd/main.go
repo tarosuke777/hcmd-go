@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"home/internal/api"
 	"home/internal/network"
 	"home/internal/scanner"
 	"os"
@@ -29,12 +30,17 @@ func main() {
 	case "hms":
 		url = "http://192.168.10.10/hms"
 	case "hv":
-		if command == "insert" {
-			fmt.Printf("--- INFO: 'home hv insert' コマンドが検出されました。SQL生成処理を開始します。 ---\n")
-			// 外部ファイル（sqlexport.go）で定義された関数を呼び出す
+		if command == "sql" {
+			fmt.Printf("--- INFO: 'home hv sql' コマンドが検出されました。SQL生成処理を開始します。 ---\n")
 			scanner.GenerateInsertSQLs() 
 			return
 		}
+		if command == "api" {
+			fmt.Printf("--- INFO: 'home hv api' コマンドが検出されました。api呼び出し処理を開始します。 ---\n")
+			api.SyncVideosToAPI() 
+			return
+		}
+
 		if command == "magic" {
 			macAddress := os.Getenv("HV_MAC_ADDRESS")
 			fmt.Printf("--- INFO: %s へのマジックパケット送信を開始します ---\n", macAddress)
@@ -44,7 +50,7 @@ func main() {
 			}
 			return
 		}
-		url = "http://192.168.10.11/videos/v2/"
+		url = "http://192.168.10.10/videos/v2/"
 	default:
 		fmt.Printf("Unknown service: %s\n", service)
 		return

@@ -19,7 +19,7 @@ type VideoRequest struct {
 	UpdatedAt string `json:"updated_at"`
 }
 
-const apiURL = "http://192.168.10.10/api/videos/store"
+const apiURL = "http://192.168.10.10/hv/api/videos/store"
 
 // SyncVideosToAPI はフォルダを走査し、各ファイル情報をAPIにPOST送信します。
 func SyncVideosToAPI() {

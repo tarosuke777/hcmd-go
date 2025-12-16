@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"home/internal/parser"
+	"io"
 	"log"
 	"net/http"
 	"time"
@@ -80,7 +81,16 @@ func sendToAPI(data VideoRequest) error {
 
 	// ステータスコードのチェック
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return fmt.Errorf("APIがエラーを返しました: %s", resp.Status)
+
+		bodyBytes, readErr := io.ReadAll(resp.Body)
+        if readErr != nil {
+            // ボディの読み取り自体に失敗した場合
+            return fmt.Errorf("APIがエラーを返しました: %s, ボディの読み取りに失敗: %v", resp.Status, readErr)
+        }
+
+		bodyString := string(bodyBytes)
+
+		return fmt.Errorf("APIがエラーを返しました: %s\nエラー詳細JSON:\n%s", resp.Status, bodyString)
 	}
 
 	return nil

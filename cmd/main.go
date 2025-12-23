@@ -50,7 +50,13 @@ func main() {
 			}
 			return
 		}
-		url = "http://192.168.10.10/videos/v2/"
+		url = "http://192.168.10.10/hv/videos/v2/"
+	case "hb":
+		url = "http://192.168.10.10/hb/"
+	case "hc":
+		url = "http://192.168.10.10/hc/"
+	case "jenkins":
+		url = "http://192.168.10.10/jenkins/"
 	default:
 		fmt.Printf("Unknown service: %s\n", service)
 		return

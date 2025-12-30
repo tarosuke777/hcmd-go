@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"home/internal/api"
 	"home/internal/network"
+	"home/internal/parser"
 	"home/internal/scanner"
+	"log"
 	"os"
 	"os/exec"
 )
@@ -39,6 +41,17 @@ func main() {
 			fmt.Printf("--- INFO: 'home hv api' コマンドが検出されました。api呼び出し処理を開始します。 ---\n")
 			api.SyncVideosToAPI() 
 			return
+		}
+
+		if command == "book" {
+			fmt.Printf("--- INFO: 'home hv book' コマンドが検出されました。api呼び出し処理を開始します。 ---\n")
+			book, err := parser.CurrentFolderToBook()
+			if err != nil {
+				log.Fatal(err)
+			}
+
+		    // あとがAPI 用の構造体に詰め替えて送るだけ
+			err = api.SyncBooksToAPI(book)
 		}
 
 		if command == "magic" {

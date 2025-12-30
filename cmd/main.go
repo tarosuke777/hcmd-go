@@ -50,9 +50,11 @@ func main() {
 				log.Fatal(err)
 			}
 
-		    // あとがAPI 用の構造体に詰め替えて送るだけ
 			err = api.SyncBooksToAPI(book)
 
+			if err != nil {
+				log.Fatal(err)
+			}
 			return
 		}
 

@@ -52,6 +52,8 @@ func main() {
 
 		    // あとがAPI 用の構造体に詰め替えて送るだけ
 			err = api.SyncBooksToAPI(book)
+
+			return
 		}
 
 		if command == "magic" {

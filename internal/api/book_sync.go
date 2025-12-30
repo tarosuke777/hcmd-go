@@ -22,7 +22,7 @@ type BookStoreRequest struct {
     Pages  []BookPageRequest `json:"pages"`
 }
 
-const apiBookStoreURL = "http://192.168.10.10/hv/api/books"
+const apiBookStoreURL = "http://192.168.10.10/hv/api/books/store"
 
 // SyncBooksToAPI 本のデータを一括で送信する
 func SyncBooksToAPI(info *parser.BookInfo) error {

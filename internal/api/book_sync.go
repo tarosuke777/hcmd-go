@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"home/internal/parser"
+	"io"
 	"net/http"
 	"time"
 )
@@ -62,7 +63,8 @@ func SyncBooksToAPI(info *parser.BookInfo) error {
     defer resp.Body.Close()
 
     if resp.StatusCode >= 400 {
-        return fmt.Errorf("book sync failed with status: %d", resp.StatusCode)
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("book sync failed with status: %d, body: %s", resp.StatusCode, string(body))
     }
 
     fmt.Printf("Book '%s' 同期成功\n", requestData.Title)

@@ -52,7 +52,7 @@ func CurrentFolderToBook() (*BookInfo, error) {
 		}
 
 		ext := strings.ToLower(filepath.Ext(entry.Name()))
-		if ext == ".jpg" || ext == ".jpeg" {
+		if ext == ".jpg" || ext == ".jpeg" || ext == ".png" {
 			pages = append(pages, PageInfo{
 				PageNumber: pageCount,
 				FilePath:   entry.Name(), // フォルダ内で実行するのでファイル名だけでOK

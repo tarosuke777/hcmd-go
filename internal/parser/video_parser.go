@@ -61,10 +61,12 @@ func WalkAndParse(targetDir string, processor func(info VideoInfo) error) error 
 		return processor(videoInfo)
 	})
 }
+
 // EscapeSQL はシングルクォートをエスケープするヘルパー関数です。
 func EscapeSQL(s string) string {
 	return strings.ReplaceAll(s, "'", "''")
 }
+
 // --- 非公開ヘルパー関数 ---
 
 // formatToSQLDateTime はファイル名の日時形式(HH-mm-ss)をSQL形式(HH:mm:ss)に変換します。

@@ -34,12 +34,12 @@ func main() {
 	case "hv":
 		if command == "sql" {
 			fmt.Printf("--- INFO: 'home hv sql' コマンドが検出されました。SQL生成処理を開始します。 ---\n")
-			scanner.GenerateInsertSQLs() 
+			scanner.GenerateInsertSQLs()
 			return
 		}
 		if command == "api" {
 			fmt.Printf("--- INFO: 'home hv api' コマンドが検出されました。api呼び出し処理を開始します。 ---\n")
-			api.SyncVideosToAPI() 
+			api.SyncVideosToAPI()
 			return
 		}
 

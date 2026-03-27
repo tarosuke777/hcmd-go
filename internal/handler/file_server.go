@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -31,6 +32,11 @@ func (h *SmartHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// GETリクエスト：標準のファイルサーバーとして振る舞う
 		// http.StripPrefixでURLの /images/ などを削ってディレクトリを参照
 		fs := http.FileServer(http.Dir(h.SaveDir))
+
+		strippedPath := r.URL.Path[len(h.Prefix)-1:]
+		log.Printf("[DEBUG] GET Request: Prefix=%s, OriginalPath=%s, Looking for file: %s in %s",
+			h.Prefix, r.URL.Path, strippedPath, h.SaveDir)
+
 		http.StripPrefix(h.Prefix, fs).ServeHTTP(w, r)
 
 	case http.MethodPost:

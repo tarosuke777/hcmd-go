@@ -11,6 +11,7 @@ import (
 
 type SmartHandler struct {
 	SaveDir string
+	Prefix  string
 }
 
 func NewSmartHandler(dirName string) *SmartHandler {
@@ -19,7 +20,9 @@ func NewSmartHandler(dirName string) *SmartHandler {
 	absPath := filepath.Join(filepath.Dir(exePath), dirName)
 	_ = os.MkdirAll(absPath, os.ModePerm)
 
-	return &SmartHandler{SaveDir: absPath}
+	prefix := fmt.Sprintf("/%s/", dirName)
+
+	return &SmartHandler{SaveDir: absPath, Prefix: prefix}
 }
 
 func (h *SmartHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -28,7 +31,7 @@ func (h *SmartHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		// GETリクエスト：標準のファイルサーバーとして振る舞う
 		// http.StripPrefixでURLの /images/ などを削ってディレクトリを参照
 		fs := http.FileServer(http.Dir(h.SaveDir))
-		http.StripPrefix(r.URL.Path, fs).ServeHTTP(w, r)
+		http.StripPrefix(h.Prefix, fs).ServeHTTP(w, r)
 
 	case http.MethodPost:
 		// POSTリクエスト：アップロード処理

@@ -6,7 +6,9 @@ import (
 	"home/internal/network"
 	"home/internal/parser"
 	"home/internal/scanner"
+	"home/internal/server"
 	"log"
+	"net/http"
 	"os"
 	"os/exec"
 )
@@ -74,6 +76,19 @@ func main() {
 		url = "http://192.168.10.10/hc/"
 	case "jenkins":
 		url = "http://192.168.10.10/jenkins/"
+
+	case "web":
+		port := ":8080"
+		// ルーターを初期化（内部で books, images, videos を設定済み）
+		router := server.NewRouter()
+
+		fmt.Printf("--- Web Server Started ---\n")
+		fmt.Printf("Endpoints: /books/, /images/, /videos/\n")
+
+		if err := http.ListenAndServe(port, router); err != nil {
+			log.Fatalf("Server failed: %v", err)
+		}
+		return
 	default:
 		fmt.Printf("Unknown service: %s\n", service)
 		return

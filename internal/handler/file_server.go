@@ -57,9 +57,8 @@ func (h *SmartHandler) handleUpload(w http.ResponseWriter, r *http.Request) {
 	// 1. 現在時刻を取得
 	now := time.Now()
 
-	// 2. 時刻を文字列にフォーマット (例: 20240327-153005-123)
-	// Go独自のレイアウト指定方法（2006, 01, 02...）を使います
-	timestamp := now.Format("20060102-150405-000")
+	// ２．秒までをフォーマットし、ナノ秒を1,000,000で割ってミリ秒にする
+	timestamp := fmt.Sprintf("%s-%03d", now.Format("20060102-150405"), now.Nanosecond()/1e6)
 
 	// 3. 元の拡張子を取得
 	ext := filepath.Ext(header.Filename)

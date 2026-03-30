@@ -59,16 +59,6 @@ func main() {
 			}
 			return
 		}
-
-		if command == "magic" {
-			macAddress := os.Getenv("HV_MAC_ADDRESS")
-			fmt.Printf("--- INFO: %s へのマジックパケット送信を開始します ---\n", macAddress)
-			err := network.SendMagicPacket(macAddress)
-			if err != nil {
-				fmt.Printf("Error sending magic packet: %v\n", err)
-			}
-			return
-		}
 		url = "http://192.168.10.10/hv/videos/v2/"
 	case "hb":
 		url = "http://192.168.10.10/hb/"
@@ -76,7 +66,14 @@ func main() {
 		url = "http://192.168.10.10/hc/"
 	case "jenkins":
 		url = "http://192.168.10.10/jenkins/"
-
+	case "magic":
+		macAddress := os.Getenv("HV_MAC_ADDRESS")
+		fmt.Printf("--- INFO: %s へのマジックパケット送信を開始します ---\n", macAddress)
+		err := network.SendMagicPacket(macAddress)
+		if err != nil {
+			fmt.Printf("Error sending magic packet: %v\n", err)
+		}
+		return
 	case "web":
 		port := ":8080"
 		// ルーターを初期化（内部で books, images, videos を設定済み）

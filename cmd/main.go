@@ -2,11 +2,10 @@ package main
 
 import (
 	"fmt"
-	"home/internal/api"
+	"home/internal/book"
 	"home/internal/network"
-	"home/internal/parser"
-	"home/internal/scanner"
 	"home/internal/server"
+	"home/internal/video"
 	"log"
 	"net/http"
 	"os"
@@ -34,25 +33,20 @@ func main() {
 	case "hms":
 		url = "http://192.168.10.10/hms"
 	case "hv":
-		if command == "sql" {
-			fmt.Printf("--- INFO: 'home hv sql' コマンドが検出されました。SQL生成処理を開始します。 ---\n")
-			scanner.GenerateInsertSQLs()
-			return
-		}
 		if command == "api" {
 			fmt.Printf("--- INFO: 'home hv api' コマンドが検出されました。api呼び出し処理を開始します。 ---\n")
-			api.SyncVideosToAPI()
+			video.SyncVideosToAPI()
 			return
 		}
 
 		if command == "book" {
 			fmt.Printf("--- INFO: 'home hv book' コマンドが検出されました。api呼び出し処理を開始します。 ---\n")
-			book, err := parser.CurrentFolderToBook()
+			b, err := book.CurrentFolderToBook()
 			if err != nil {
 				log.Fatal(err)
 			}
 
-			err = api.SyncBooksToAPI(book)
+			err = book.SyncBooksToAPI(b)
 
 			if err != nil {
 				log.Fatal(err)

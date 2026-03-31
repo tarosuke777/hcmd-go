@@ -1,10 +1,9 @@
-package api
+package video
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"home/internal/parser"
 	"io"
 	"log"
 	"net/http"
@@ -46,7 +45,7 @@ func SyncVideosToAPI() {
 	fmt.Printf("--- ログ: APIへのデータ送信を開始します ---\n")
 
 	// WalkAndParse 関数に処理ロジックを渡す
-	err := parser.WalkAndParse(parser.TargetDir, func(info parser.VideoInfo) error {
+	err := WalkAndParse(TargetDir, func(info VideoInfo) error {
 
 		// info.DBDateTime を time.Time に変換
 		fileTime, parseErr := time.Parse(timeLayout, info.DBDateTime)

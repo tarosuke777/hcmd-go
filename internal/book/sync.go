@@ -1,10 +1,9 @@
-package api
+package book
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"home/internal/parser"
 	"io"
 	"net/http"
 	"time"
@@ -26,7 +25,7 @@ type BookStoreRequest struct {
 const apiBookStoreURL = "http://192.168.10.10/hv/api/books/store"
 
 // SyncBooksToAPI 本のデータを一括で送信する
-func SyncBooksToAPI(info *parser.BookInfo) error {
+func SyncBooksToAPI(info *BookInfo) error {
 	// 1. 送信用の構造体 (Request型) に詰め替える
 	var pageRequests []BookPageRequest
 	for _, p := range info.Pages {

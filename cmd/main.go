@@ -33,8 +33,8 @@ func main() {
 	case "hms":
 		url = "http://192.168.10.10/hms"
 	case "hv":
-		if command == "api" {
-			fmt.Printf("--- INFO: 'home hv api' コマンドが検出されました。api呼び出し処理を開始します。 ---\n")
+		if command == "video" {
+			fmt.Printf("--- INFO: 'home hv video' コマンドが検出されました。api呼び出し処理を開始します。 ---\n")
 			video.SyncVideosToAPI()
 			return
 		}

@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
-	"home/internal/book"
+	"home/internal/domain/book"
+	"home/internal/domain/video"
 	"home/internal/network"
 	"home/internal/server"
-	"home/internal/video"
 	"log"
 	"net/http"
 	"os"

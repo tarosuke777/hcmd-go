@@ -9,7 +9,6 @@ import (
 // VideoInfo は解析された動画ファイルの情報を含む構造体です。
 type VideoInfo struct {
 	Title      string
-	RawDate    string // 元の日時文字列 (例: 2025-09-13 18-06-25)
 	FileName   string
 	DBDateTime string // SQL/API向けの日時文字列 (例: 2025-09-13 18:06:25)
 }

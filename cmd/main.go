@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"home/internal/domain/book"
+	"home/internal/domain/image"
 	"home/internal/domain/video"
 	"home/internal/network"
 	"home/internal/server"
@@ -36,6 +37,12 @@ func main() {
 		if command == "video" {
 			fmt.Printf("--- INFO: 'home hv video' コマンドが検出されました。api呼び出し処理を開始します。 ---\n")
 			video.SyncVideosToAPI()
+			return
+		}
+
+		if command == "image" {
+			fmt.Printf("--- INFO: 'home hv image' コマンドが検出されました。api呼び出し処理を開始します。 ---\n")
+			image.SyncImagesToAPI()
 			return
 		}
 

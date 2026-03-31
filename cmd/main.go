@@ -34,6 +34,7 @@ func main() {
 	case "hms":
 		url = "http://192.168.10.10/hms"
 	case "hv":
+		fmt.Printf("--- Debug: HVモードに入りました (command: %s) ---\n", command)
 		if command == "video" {
 			fmt.Printf("--- INFO: 'home hv video' コマンドが検出されました。api呼び出し処理を開始します。 ---\n")
 			video.SyncVideosToAPI()
@@ -60,7 +61,7 @@ func main() {
 			}
 			return
 		}
-		url = "http://192.168.10.10/hv/videos/v2/"
+		url = "http://192.168.10.10/hv/videos/"
 	case "hb":
 		url = "http://192.168.10.10/hb/"
 	case "hc":

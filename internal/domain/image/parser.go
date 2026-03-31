@@ -19,7 +19,7 @@ const TargetDir = "./"
 // ファイル名解析用の正規表現
 // 対象例: "20260328-130702-249.jpg"
 // グループ1: 日付(8桁), グループ2: 時間(6桁), グループ3: ミリ秒等(3桁), グループ4: 拡張子
-var re = regexp.MustCompile(`^(\d{8})-(\d{6})-(\d{3})\.(jpg|jpeg|png|mp4|mov)$`)
+var re = regexp.MustCompile(`(?i)^(\d{8})-(\d{6})-(\d{3})\.(jpg|jpeg|png|heic|mp4|mov|avi|webm)$`)
 
 // --- 公開関数 ---
 

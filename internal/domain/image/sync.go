@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"home/internal/hvapi"
 	"log"
+	"os"
+	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -19,6 +22,7 @@ type MaxTimestampResponse struct {
 }
 
 const (
+	uploadURL     = "http://192.168.10.11:8080/images/" // 画像アップロード用のURL (handler.goのエンドポイント)
 	apiStoreURL   = "http://192.168.10.10/hv/api/images/store"
 	apiMaxTimeURL = "http://192.168.10.10/hv/api/images/max-timestamp"
 	timeLayout    = "2006-01-02 15:04:05" // Laravelのデフォルトフォーマットに合わせる
@@ -60,4 +64,68 @@ func SyncImagesToAPI() {
 		return nil
 	})
 	fmt.Printf("--- ログ: 全ての処理が完了しました。---\n")
+}
+
+func UploadAndSyncImages() {
+
+	fmt.Printf("--- ログ: アップロードとAPI登録を開始します ---\n")
+
+	files, err := os.ReadDir("./")
+	if err != nil {
+		log.Fatalf("ディレクトリの読み込みに失敗: %v", err)
+	}
+
+	fmt.Printf("--- ログ: 一括アップロードとAPI登録を開始します ---\n")
+
+	for _, file := range files {
+		// ディレクトリはスキップ
+		if file.IsDir() {
+			continue
+		}
+
+		// 拡張子チェック (画像・動画と思われるもの)
+		ext := strings.ToLower(filepath.Ext(file.Name()))
+		switch ext {
+		case ".jpg", ".jpeg", ".png", ".heic":
+			// 処理を継続
+		default:
+			continue
+		}
+
+		fileName := file.Name()
+
+		// 2. Webサーバーへアップロードして新しいファイル名を取得
+		newFileName, err := hvapi.UploadFile(uploadURL, fileName)
+		if err != nil {
+			log.Printf("アップロード失敗 (%s): %v", fileName, err)
+			continue
+		}
+
+		matches := re.FindStringSubmatch(newFileName)
+		if len(matches) < 3 {
+			log.Printf("サーバーからのレスポンス形式が不正です (%s)", newFileName)
+			continue
+		}
+
+		// matches[1]: 日付(YYYYMMDD), matches[2]: 時間(HHmmss)
+		datePart, timePart := matches[1], matches[2]
+		dbTime := fmt.Sprintf("%s-%s-%s %s:%s:%s",
+			datePart[0:4], datePart[4:6], datePart[6:8],
+			timePart[0:2], timePart[2:4], timePart[4:6])
+
+		// 5. HV API(10.10)へ送信
+		payload := ImageRequest{
+			FileName:  newFileName,
+			CreatedAt: dbTime,
+			UpdatedAt: dbTime,
+		}
+
+		// 5. HV APIへDB登録
+		if err := hvapi.SendToAPI(apiStoreURL, payload); err != nil {
+			log.Printf("API登録エラー (%s): %v", newFileName, err)
+		} else {
+			fmt.Printf("成功: %s -> %s (DB日時: %s)\n", fileName, newFileName, dbTime)
+		}
+	}
+	fmt.Printf("--- ログ: 全ての処理が完了しました ---\n")
 }

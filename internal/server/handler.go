@@ -81,5 +81,5 @@ func (h *SmartHandler) handleUpload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, "Successfully uploaded: %s", header.Filename)
+	fmt.Fprint(w, newFileName)
 }

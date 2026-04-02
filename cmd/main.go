@@ -76,6 +76,13 @@ func main() {
 			fmt.Printf("Error sending magic packet: %v\n", err)
 		}
 		return
+	case "upload":
+		if command == "image" {
+			fmt.Printf("--- INFO: 'home upload image' コマンドが検出されました。api呼び出し処理を開始します。 ---\n")
+			image.UploadAndSyncImages()
+			return
+		}
+		return
 	case "web":
 		port := ":8080"
 		// ルーターを初期化（内部で books, images, videos を設定済み）

@@ -5,7 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
+	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -66,4 +69,60 @@ func SendToAPI[T any](url string, data T) error {
 	}
 
 	return nil
+}
+
+func UploadFile(url string, filePath string) (string, error) {
+	// 1. ファイルを開く
+	file, err := os.Open(filePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to open file: %w", err)
+	}
+	defer file.Close()
+
+	// 2. multipart/form-data の作成
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	// "myImage" フィールドを作成 (handler.go の r.FormFile("myImage") に対応)
+	part, err := writer.CreateFormFile("myImage", filepath.Base(filePath))
+	if err != nil {
+		return "", fmt.Errorf("failed to create form file: %w", err)
+	}
+
+	// ファイルの中身を part にコピー
+	if _, err = io.Copy(part, file); err != nil {
+		return "", fmt.Errorf("failed to copy file content: %w", err)
+	}
+
+	// フォームの書き込みを完了させて、バウンダリを閉じます
+	if err := writer.Close(); err != nil {
+		return "", fmt.Errorf("failed to close writer: %w", err)
+	}
+
+	// 3. POST送信
+	req, err := http.NewRequest("POST", url, body)
+	if err != nil {
+		return "", fmt.Errorf("failed to create request: %w", err)
+	}
+	// multipart の Content-Type (バウンダリを含む) を設定
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("request failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("bad status: %s", resp.Status)
+	}
+
+	// 4. レスポンスボディ (変換後のファイル名) を文字列として読み取って返す
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("failed to read response: %w", err)
+	}
+
+	return string(respBody), nil
 }

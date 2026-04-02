@@ -125,6 +125,13 @@ func UploadAndSyncImages() {
 			log.Printf("API登録エラー (%s): %v", newFileName, err)
 		} else {
 			fmt.Printf("成功: %s -> %s (DB日時: %s)\n", fileName, newFileName, dbTime)
+
+			// --- 追加: ファイルの削除処理 ---
+			if err := os.Remove(fileName); err != nil {
+				log.Printf("ファイル削除失敗 (%s): %v", fileName, err)
+			} else {
+				fmt.Printf("削除完了: %s\n", fileName)
+			}
 		}
 	}
 	fmt.Printf("--- ログ: 全ての処理が完了しました ---\n")

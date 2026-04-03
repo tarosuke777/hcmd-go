@@ -9,11 +9,11 @@ import (
 
 // APIに送信するデータ構造体
 type VideoRequest struct {
-	Title     string `json:"title"`
-	Name      string `json:"name"`
-	FileName  string `json:"file_name"`
-	CreatedAt string `json:"created_at"`
-	UpdatedAt string `json:"updated_at"`
+	Title     string        `json:"title"`
+	Name      string        `json:"name"`
+	FileName  string        `json:"file_name"`
+	CreatedAt hvapi.APITime `json:"created_at"`
+	UpdatedAt hvapi.APITime `json:"updated_at"`
 }
 
 type MaxTimestampResponse struct {
@@ -23,7 +23,6 @@ type MaxTimestampResponse struct {
 const (
 	apiStoreURL   = "http://192.168.10.10/hv/api/videos/store"
 	apiMaxTimeURL = "http://192.168.10.10/hv/api/videos/max-timestamp"
-	timeLayout    = "2006-01-02 15:04:05" // Laravelのデフォルトフォーマットに合わせる
 )
 
 // SyncVideosToAPI はフォルダを走査し、各ファイル情報をAPIにPOST送信します。
@@ -38,29 +37,23 @@ func SyncVideosToAPI() {
 		maxTime = time.Unix(0, 0)
 	}
 
-	fmt.Printf("最新の同期済み時刻: %v\n", maxTime.Format(timeLayout))
+	fmt.Printf("最新の同期済み時刻: %v\n", hvapi.APITime(maxTime))
 	fmt.Printf("--- ログ: APIへのデータ送信を開始します ---\n")
 
 	// WalkAndParse 関数に処理ロジックを渡す
 	WalkAndParse("./", func(info VideoInfo) error {
 
-		// info.DBDateTime を time.Time に変換
-		fileTime, parseErr := time.Parse(timeLayout, info.DBDateTime)
-		if parseErr != nil {
-			log.Printf("時刻パースエラー (%s): %v", info.FileName, parseErr)
-			return nil
-		}
-
 		// 3. 比較: ファイル時刻 > DB最新時刻 の場合のみ送信
-		if fileTime.After(maxTime) {
+		if info.FileTime.After(maxTime) {
 
+			hvApiTime := hvapi.APITime(info.FileTime)
 			// JSON用の構造体を作成
 			payload := VideoRequest{
 				Title:     info.Title,
 				Name:      "", // 必要に応じて設定
 				FileName:  info.FileName,
-				CreatedAt: info.DBDateTime,
-				UpdatedAt: info.DBDateTime,
+				CreatedAt: hvApiTime,
+				UpdatedAt: hvApiTime,
 			}
 
 			// API呼び出しの実行

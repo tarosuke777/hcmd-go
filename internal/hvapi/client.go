@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-const TimeLayout = "2006-01-02 15:04:05"
+const timeLayout = "2006-01-02 15:04:05"
 
 type MaxTimestampResponse struct {
 	MaxCreatedAt string `json:"max_created_at"`
@@ -40,7 +40,7 @@ func FetchMaxTimestamp(url string) (time.Time, error) {
 		return time.Unix(0, 0), nil
 	}
 
-	return time.Parse(TimeLayout, result.MaxCreatedAt)
+	return time.Parse(timeLayout, result.MaxCreatedAt)
 }
 
 // SendToAPI は任意の構造体データをJSONとして指定されたURLにPOSTします (ジェネリクス使用)

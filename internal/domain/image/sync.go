@@ -12,9 +12,9 @@ import (
 
 // APIに送信するデータ構造体
 type ImageRequest struct {
-	FileName  string `json:"file_name"`
-	CreatedAt string `json:"created_at"`
-	UpdatedAt string `json:"updated_at"`
+	FileName  string        `json:"file_name"`
+	CreatedAt hvapi.APITime `json:"created_at"`
+	UpdatedAt hvapi.APITime `json:"updated_at"`
 }
 
 type MaxTimestampResponse struct {
@@ -25,7 +25,6 @@ const (
 	uploadURL     = "http://192.168.10.11:8080/images/" // 画像アップロード用のURL (handler.goのエンドポイント)
 	apiStoreURL   = "http://192.168.10.10/hv/api/images/store"
 	apiMaxTimeURL = "http://192.168.10.10/hv/api/images/max-timestamp"
-	timeLayout    = "2006-01-02 15:04:05" // Laravelのデフォルトフォーマットに合わせる
 )
 
 // SyncImagesToAPI はフォルダを走査し、各ファイル情報をAPIにPOST送信します。
@@ -40,18 +39,19 @@ func SyncImagesToAPI() {
 		maxTime = time.Unix(0, 0)
 	}
 
-	fmt.Printf("最新の同期済み時刻: %v\n", maxTime.Format(timeLayout))
+	fmt.Printf("最新の同期済み時刻: %v\n", hvapi.APITime(maxTime))
 	fmt.Printf("--- ログ: APIへのデータ送信を開始します ---\n")
 
 	// WalkAndParse 関数に処理ロジックを渡す
 	WalkAndParse("./", func(info ImageInfo) error {
-		fileTime, _ := time.Parse(hvapi.TimeLayout, info.DBDateTime)
 
-		if fileTime.After(maxTime) {
+		if info.FileTime.After(maxTime) {
+			hvApiTime := hvapi.APITime(info.FileTime)
+			// JSON用の構造体を作成
 			payload := ImageRequest{
 				FileName:  info.FileName,
-				CreatedAt: info.DBDateTime,
-				UpdatedAt: info.DBDateTime,
+				CreatedAt: hvApiTime,
+				UpdatedAt: hvApiTime,
 			}
 
 			// ジェネリクスにより ImageRequest 型として送信
@@ -107,24 +107,32 @@ func UploadAndSyncImages() {
 			continue
 		}
 
-		// matches[1]: 日付(YYYYMMDD), matches[2]: 時間(HHmmss)
-		datePart, timePart := matches[1], matches[2]
-		dbTime := fmt.Sprintf("%s-%s-%s %s:%s:%s",
-			datePart[0:4], datePart[4:6], datePart[6:8],
-			timePart[0:2], timePart[2:4], timePart[4:6])
+		// matches[1]: "20260328", matches[2]: "130702"
+		// これを繋げて "20260328-130702" という形でパースする
+		rawDateTime := matches[1] + "-" + matches[2]
+
+		// 文字列の並び順通りのレイアウトを指定
+		// 20060102 (年月日) - 150405 (時分秒)
+		fileTime, err := time.Parse("20060102-150405", rawDateTime)
+		if err != nil {
+			log.Printf("日時変換エラー (%s): %v", matches[0], err)
+			fileTime = time.Time{} // エラー時はゼロ値
+		}
+
+		hvApiTime := hvapi.APITime(fileTime)
 
 		// 5. HV API(10.10)へ送信
 		payload := ImageRequest{
 			FileName:  newFileName,
-			CreatedAt: dbTime,
-			UpdatedAt: dbTime,
+			CreatedAt: hvApiTime,
+			UpdatedAt: hvApiTime,
 		}
 
 		// 5. HV APIへDB登録
 		if err := hvapi.SendToAPI(apiStoreURL, payload); err != nil {
 			log.Printf("API登録エラー (%s): %v", newFileName, err)
 		} else {
-			fmt.Printf("成功: %s -> %s (DB日時: %s)\n", fileName, newFileName, dbTime)
+			fmt.Printf("成功: %s -> %s (DB日時: %s)\n", fileName, newFileName, hvApiTime)
 
 			// --- 追加: ファイルの削除処理 ---
 			if err := os.Remove(fileName); err != nil {

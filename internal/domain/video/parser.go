@@ -2,15 +2,17 @@ package video
 
 import (
 	"home/internal/hvapi"
+	"log"
 	"regexp"
 	"strings"
+	"time"
 )
 
 // VideoInfo は解析された動画ファイルの情報を含む構造体です。
 type VideoInfo struct {
-	Title      string
-	FileName   string
-	DBDateTime string // SQL/API向けの日時文字列 (例: 2025-09-13 18:06:25)
+	Title    string
+	FileName string
+	FileTime time.Time // SQL/API向けの日時文字列 (例: 2025-09-13 18:06:25)
 }
 
 // ファイル名解析用の正規表現
@@ -24,14 +26,20 @@ func WalkAndParse(targetDir string, processor func(info VideoInfo) error) error 
 	return hvapi.GenericWalkAndParse(targetDir, re, func(matches []string) VideoInfo {
 		// matches[1]: タイトル, matches[2]: 日時
 		rawDate := matches[2]
-		// 18-06-25 -> 18:06:25 に変換
-		parts := strings.Split(rawDate, " ")
-		dbTime := parts[0] + " " + strings.ReplaceAll(parts[1], "-", ":")
+
+		// 文字列の形に合わせたレイアウトで直接パース
+		// ハイフン区切りのままでOK
+		fileTime, err := time.Parse("2006-01-02 15-04-05", rawDate)
+		if err != nil {
+			log.Printf("日時変換エラー (%s): %v", matches[0], err)
+			// エラー時の代替値（ゼロ値など）を考慮
+			fileTime = time.Time{}
+		}
 
 		return VideoInfo{
-			Title:      strings.TrimSpace(matches[1]),
-			FileName:   matches[0],
-			DBDateTime: dbTime,
+			Title:    strings.TrimSpace(matches[1]),
+			FileName: matches[0],
+			FileTime: fileTime,
 		}
 	}, processor)
 }

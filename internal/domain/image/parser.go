@@ -1,15 +1,16 @@
 package image
 
 import (
-	"fmt"
 	"home/internal/hvapi"
+	"log"
 	"regexp"
+	"time"
 )
 
 // VideoInfo は解析された動画ファイルの情報を含む構造体です。
 type ImageInfo struct {
-	FileName   string
-	DBDateTime string // SQL/API向けの日時文字列 (例: 2025-09-13 18:06:25)
+	FileName string
+	FileTime time.Time // SQL/API向けの日時文字列 (例: 2025-09-13 18:06:25)
 }
 
 // ファイル名解析用の正規表現
@@ -22,16 +23,22 @@ var re = regexp.MustCompile(`(?i)^(\d{8})-(\d{6})-(\d{3})\.(jpg|jpeg|png|heic|mp
 // WalkAndParse は指定されたフォルダを走査し、正規表現に一致するファイル情報を処理関数に渡します。
 func WalkAndParse(targetDir string, processor func(info ImageInfo) error) error {
 	return hvapi.GenericWalkAndParse(targetDir, re, func(matches []string) ImageInfo {
-		// matches[1]: 日付, matches[2]: 時間
-		datePart, timePart := matches[1], matches[2]
 
-		dbTime := fmt.Sprintf("%s-%s-%s %s:%s:%s",
-			datePart[0:4], datePart[4:6], datePart[6:8],
-			timePart[0:2], timePart[2:4], timePart[4:6])
+		// matches[1]: "20260328", matches[2]: "130702"
+		// これを繋げて "20260328-130702" という形でパースする
+		rawDateTime := matches[1] + "-" + matches[2]
+
+		// 文字列の並び順通りのレイアウトを指定
+		// 20060102 (年月日) - 150405 (時分秒)
+		fileTime, err := time.Parse("20060102-150405", rawDateTime)
+		if err != nil {
+			log.Printf("日時変換エラー (%s): %v", matches[0], err)
+			fileTime = time.Time{} // エラー時はゼロ値
+		}
 
 		return ImageInfo{
-			FileName:   matches[0], // ファイル名全体
-			DBDateTime: dbTime,
+			FileName: matches[0], // ファイル名全体
+			FileTime: fileTime,   // パースした日時
 		}
 	}, processor)
 }

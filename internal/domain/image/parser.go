@@ -35,19 +35,3 @@ func WalkAndParse(targetDir string, processor func(info ImageInfo) error) error 
 		}
 	}, processor)
 }
-
-// --- 非公開ヘルパー関数 ---
-
-// formatToSQLDateTime は連続した数字の文字列を SQL 形式 (YYYY-MM-DD HH:mm:ss) に変換します。
-func formatToSQLDateTime(datePart, timePart string) string {
-	if len(datePart) != 8 || len(timePart) != 6 {
-		return datePart + " " + timePart
-	}
-
-	// YYYYMMDD -> YYYY-MM-DD
-	formattedDate := fmt.Sprintf("%s-%s-%s", datePart[0:4], datePart[4:6], datePart[6:8])
-	// HHmmss -> HH:mm:ss
-	formattedTime := fmt.Sprintf("%s:%s:%s", timePart[0:2], timePart[2:4], timePart[4:6])
-
-	return formattedDate + " " + formattedTime
-}

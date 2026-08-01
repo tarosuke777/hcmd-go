@@ -5,9 +5,9 @@ import (
 	"home/internal/domain/book"
 	"home/internal/domain/image"
 	"home/internal/domain/video"
+	"home/internal/jenkins"
 	"home/internal/network"
 	"home/internal/server"
-	"home/internal/jenkins"
 	"log"
 	"net/http"
 	"os"
@@ -33,7 +33,7 @@ func main() {
 	// 引数に基づいて開くURLを決定
 	switch service {
 	case "hms":
-		url = "http://192.168.10.10/hms"
+		url = "https://192.168.10.10/hms"
 	case "hv":
 		fmt.Printf("--- Debug: HVモードに入りました (command: %s) ---\n", command)
 		if command == "video" {
@@ -62,9 +62,9 @@ func main() {
 			}
 			return
 		}
-		url = "http://192.168.10.10/hv/videos/"
+		url = "https://192.168.10.10/hv/videos/"
 	case "hb":
-		url = "http://192.168.10.10/hb/"
+		url = "https://192.168.10.10/hb/"
 	case "hc":
 		url = "http://192.168.10.10/hc/"
 	case "jenkins":
@@ -79,7 +79,7 @@ func main() {
 			fmt.Printf("--- INFO: Jenkins ジョブ '%s' の実行を開始します ---\n", jobName)
 
 			// クライアントの初期化
-			client, err := jenkins.NewClientFromEnv("http://192.168.10.10/jenkins")
+			client, err := jenkins.NewClientFromEnv("https://192.168.10.10/jenkins")
 			if err != nil {
 				log.Fatalf("Jenkins client init error: %v", err)
 			}
@@ -93,8 +93,7 @@ func main() {
 			return
 		}
 
-		url = "http://192.168.10.10/jenkins/"
-
+		url = "https://192.168.10.10/jenkins/"
 
 	case "magic":
 		macAddress := os.Getenv("HV_MAC_ADDRESS")

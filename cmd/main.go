@@ -7,6 +7,7 @@ import (
 	"home/internal/domain/video"
 	"home/internal/network"
 	"home/internal/server"
+	"home/internal/jenkins"
 	"log"
 	"net/http"
 	"os"
@@ -67,7 +68,34 @@ func main() {
 	case "hc":
 		url = "http://192.168.10.10/hc/"
 	case "jenkins":
+
+		if command == "build" {
+			if len(os.Args) < 4 {
+				fmt.Println("Usage: home jenkins build <job-name>")
+				return
+			}
+			jobName := os.Args[3]
+
+			fmt.Printf("--- INFO: Jenkins ジョブ '%s' の実行を開始します ---\n", jobName)
+
+			// クライアントの初期化
+			client, err := jenkins.NewClientFromEnv("http://192.168.10.10/jenkins")
+			if err != nil {
+				log.Fatalf("Jenkins client init error: %v", err)
+			}
+
+			// ビルド実行
+			if err := client.TriggerBuild(jobName); err != nil {
+				log.Fatalf("Build error: %v", err)
+			}
+
+			fmt.Printf("Successfully triggered build for '%s'\n", jobName)
+			return
+		}
+
 		url = "http://192.168.10.10/jenkins/"
+
+
 	case "magic":
 		macAddress := os.Getenv("HV_MAC_ADDRESS")
 		fmt.Printf("--- INFO: %s へのマジックパケット送信を開始します ---\n", macAddress)

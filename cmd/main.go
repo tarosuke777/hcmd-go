@@ -76,10 +76,12 @@ func main() {
 			}
 			jobName := os.Args[3]
 
+			jenkinsUrl := os.Getenv("JENKINS_URL")
+
 			fmt.Printf("--- INFO: Jenkins ジョブ '%s' の実行を開始します ---\n", jobName)
 
 			// クライアントの初期化
-			client, err := jenkins.NewClientFromEnv("https://192.168.10.10/jenkins")
+			client, err := jenkins.NewClientFromEnv(jenkinsUrl)
 			if err != nil {
 				log.Fatalf("Jenkins client init error: %v", err)
 			}

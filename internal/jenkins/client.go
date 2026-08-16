@@ -4,9 +4,10 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
+	"strings"
 )
-
 type Client struct {
 	BaseURL  string
 	Username string
@@ -27,23 +28,37 @@ func NewClientFromEnv(baseURL string) (*Client, error) {
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 
+	// リダイレクトを自動追従せず、その場でステータスを返すように設定
+	httpClient := &http.Client{
+		Transport: tr,
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+
 	return &Client{
 		BaseURL:  baseURL,
 		Username: user,
 		APIToken: token,
-		HTTP:     &http.Client{Transport: tr},
+		HTTP:     httpClient,
 	}, nil
 }
 
 // TriggerBuild 指定したジョブのビルドを実行する
 func (c *Client) TriggerBuild(jobName string) error {
-	endpoint := fmt.Sprintf("%s/job/%s/build", c.BaseURL, jobName)
+	endpoint := fmt.Sprintf("%s/job/%s/buildWithParameters", c.BaseURL, jobName)
 
-	req, err := http.NewRequest("POST", endpoint, nil)
+	// 固定パラメータ BRANCH_NAME=main を設定
+	val := url.Values{}
+	val.Set("BRANCH_NAME", "main")
+	reqBody := strings.NewReader(val.Encode())
+
+	req, err := http.NewRequest("POST", endpoint, reqBody)
 	if err != nil {
 		return err
 	}
 
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.SetBasicAuth(c.Username, c.APIToken)
 
 	resp, err := c.HTTP.Do(req)

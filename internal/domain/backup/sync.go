@@ -34,7 +34,7 @@ func UploadAndSyncBackups() {
 		// 拡張子チェック (SQLファイルと圧縮ファイル)
 		ext := strings.ToLower(filepath.Ext(file.Name()))
 		switch ext {
-		case ".sql", ".gz":
+		case ".sql", ".gz", ".zip":
 			// 処理を継続
 		default:
 			continue

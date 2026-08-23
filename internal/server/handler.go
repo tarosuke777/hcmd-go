@@ -13,9 +13,10 @@ type SmartHandler struct {
 	SaveDir string
 	Prefix  string
 	Rename  bool
+	MaxMB   int64
 }
 
-func NewSmartHandler(dirName string, rename bool) *SmartHandler {
+func NewSmartHandler(dirName string, rename bool, maxMB int64) *SmartHandler {
 	// 実行ファイル基準の絶対パスを作成
 	exePath, _ := os.Executable()
 	absPath := filepath.Join(filepath.Dir(exePath), dirName)
@@ -23,7 +24,7 @@ func NewSmartHandler(dirName string, rename bool) *SmartHandler {
 
 	prefix := fmt.Sprintf("/%s/", dirName)
 
-	return &SmartHandler{SaveDir: absPath, Prefix: prefix, Rename: rename}
+	return &SmartHandler{SaveDir: absPath, Prefix: prefix, Rename: rename, MaxMB: maxMB}
 }
 
 func (h *SmartHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -46,8 +47,12 @@ func (h *SmartHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // ServeHTTP を実装することで http.Handler インターフェースを満たします
 func (h *SmartHandler) handleUpload(w http.ResponseWriter, r *http.Request) {
 
-	// 5MB制限
-	r.Body = http.MaxBytesReader(w, r.Body, 5*1024*1024)
+	// 設定された MaxMB を使用（デフォルトで指定サイズ制限にする）
+	maxBytes := h.MaxMB * 1024 * 1024
+	if maxBytes <= 0 {
+		maxBytes = 10 * 1024 * 1024 // 未指定時はデフォルト10MBなど
+	}
+
 	file, header, err := r.FormFile("myImage")
 	if err != nil {
 		http.Error(w, "Invalid file", http.StatusBadRequest)

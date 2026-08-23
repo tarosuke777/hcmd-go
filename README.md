@@ -5,8 +5,10 @@ https://go.dev/doc/
 # Build Command
 
 go build -o home.exe cmd/main.go
+GOOS=windows GOARCH=amd64 go build -o home.exe cmd/main.go
 
 go build -o home cmd/main.go
+GOOS=linux GOARCH=amd64 go build -o home cmd/main.go
 
 # Web Upload Command
 

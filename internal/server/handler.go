@@ -12,9 +12,10 @@ import (
 type SmartHandler struct {
 	SaveDir string
 	Prefix  string
+	Rename  bool
 }
 
-func NewSmartHandler(dirName string) *SmartHandler {
+func NewSmartHandler(dirName string, rename bool) *SmartHandler {
 	// 実行ファイル基準の絶対パスを作成
 	exePath, _ := os.Executable()
 	absPath := filepath.Join(filepath.Dir(exePath), dirName)
@@ -22,7 +23,7 @@ func NewSmartHandler(dirName string) *SmartHandler {
 
 	prefix := fmt.Sprintf("/%s/", dirName)
 
-	return &SmartHandler{SaveDir: absPath, Prefix: prefix}
+	return &SmartHandler{SaveDir: absPath, Prefix: prefix, Rename: rename}
 }
 
 func (h *SmartHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -54,18 +55,24 @@ func (h *SmartHandler) handleUpload(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	// 1. 現在時刻を取得
-	now := time.Now()
+	var newFileName string
 
-	// ２．秒までをフォーマットし、ナノ秒を1,000,000で割ってミリ秒にする
-	timestamp := fmt.Sprintf("%s-%03d", now.Format("20060102-150405"), now.Nanosecond()/1e6)
+	if h.Rename {
 
-	// 3. 元の拡張子を取得
-	ext := filepath.Ext(header.Filename)
-
-	// 4. 新しいファイル名を組み立てる
-	// 同時実行が心配な場合は、最後に少しランダムな文字を足すか、元の名前を繋げます
-	newFileName := fmt.Sprintf("%s%s", timestamp, ext)
+		// 1. 現在時刻を取得
+		now := time.Now()
+		// ２．秒までをフォーマットし、ナノ秒を1,000,000で割ってミリ秒にする
+		timestamp := fmt.Sprintf("%s-%03d", now.Format("20060102-150405"), now.Nanosecond()/1e6)
+		// 3. 元の拡張子を取得
+		ext := filepath.Ext(header.Filename)
+		// 4. 新しいファイル名を組み立てる
+		// 同時実行が心配な場合は、最後に少しランダムな文字を足すか、元の名前を繋げます
+		newFileName = fmt.Sprintf("%s%s", timestamp, ext)
+	} else {
+		// バックアップ用などの「そのまま」ロジック
+		// パストラバーサル対策のため必ず filepath.Base を通す
+		newFileName = filepath.Base(header.Filename)
+	}
 
 	// 保存パスの作成
 	dstPath := filepath.Join(h.SaveDir, newFileName)

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"home/internal/domain/backup"
 	"home/internal/domain/book"
 	"home/internal/domain/image"
 	"home/internal/domain/video"
@@ -111,6 +112,13 @@ func main() {
 			image.UploadAndSyncImages()
 			return
 		}
+
+		if command == "backup" {
+			fmt.Printf("--- INFO: 'home upload backup' コマンドが検出されました。upload処理を開始します。 ---\n")
+			backup.UploadAndSyncBackups()
+			return
+		}
+
 		return
 	case "web":
 		port := ":8080"

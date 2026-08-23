@@ -23,8 +23,8 @@ type MaxTimestampResponse struct {
 
 const (
 	uploadURL     = "http://192.168.10.11:8080/images/" // 画像アップロード用のURL (handler.goのエンドポイント)
-	apiStoreURL   = "http://192.168.10.10/hv/api/images/store"
-	apiMaxTimeURL = "http://192.168.10.10/hv/api/images/max-timestamp"
+	apiStoreURL   = "https://hv.home.arpa/hv/api/images/store"
+	apiMaxTimeURL = "https://hv.home.arpa/hv/api/images/max-timestamp"
 )
 
 // SyncImagesToAPI はフォルダを走査し、各ファイル情報をAPIにPOST送信します。

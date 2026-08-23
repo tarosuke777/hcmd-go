@@ -21,8 +21,8 @@ type MaxTimestampResponse struct {
 }
 
 const (
-	apiStoreURL   = "http://192.168.10.10/hv/api/videos/store"
-	apiMaxTimeURL = "http://192.168.10.10/hv/api/videos/max-timestamp"
+	apiStoreURL   = "https://hv.home.arpa/api/videos/store"
+	apiMaxTimeURL = "https://hv.home.arpa/api/videos/max-timestamp"
 )
 
 // SyncVideosToAPI はフォルダを走査し、各ファイル情報をAPIにPOST送信します。

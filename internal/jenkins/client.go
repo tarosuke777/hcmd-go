@@ -1,13 +1,13 @@
 package jenkins
 
 import (
-	"crypto/tls"
 	"fmt"
 	"net/http"
 	"net/url"
 	"os"
 	"strings"
 )
+
 type Client struct {
 	BaseURL  string
 	Username string
@@ -23,14 +23,8 @@ func NewClientFromEnv(baseURL string) (*Client, error) {
 		return nil, fmt.Errorf("JENKINS_USER or JENKINS_API_TOKEN is not set")
 	}
 
-	// SSL/TLS証明書エラー対策を含めたClientを初期化
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	}
-
 	// リダイレクトを自動追従せず、その場でステータスを返すように設定
 	httpClient := &http.Client{
-		Transport: tr,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
 		},

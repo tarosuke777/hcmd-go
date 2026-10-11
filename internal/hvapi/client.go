@@ -2,6 +2,7 @@ package hvapi
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -18,9 +19,19 @@ type MaxTimestampResponse struct {
 	MaxCreatedAt string `json:"max_created_at"`
 }
 
+func newHTTPClient(timeout time.Duration) *http.Client {
+	transport := http.DefaultTransport.(*http.Transport).Clone()
+	transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+
+	return &http.Client{
+		Timeout:   timeout,
+		Transport: transport,
+	}
+}
+
 // FetchMaxTimestamp は指定されたURLから最新の時刻を取得します
 func FetchMaxTimestamp(url string) (time.Time, error) {
-	client := &http.Client{Timeout: 5 * time.Second}
+	client := newHTTPClient(5 * time.Second)
 	resp, err := client.Get(url)
 	if err != nil {
 		return time.Time{}, err
@@ -56,7 +67,7 @@ func SendToAPI[T any](url string, data T) error {
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{Timeout: 10 * time.Second}
+	client := newHTTPClient(10 * time.Second)
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
@@ -107,7 +118,7 @@ func UploadFile(url string, filePath string) (string, error) {
 	// multipart の Content-Type (バウンダリを含む) を設定
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 
-	client := &http.Client{}
+	client := newHTTPClient(0)
 	resp, err := client.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("request failed: %w", err)

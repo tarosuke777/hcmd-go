@@ -22,7 +22,7 @@ type MaxTimestampResponse struct {
 }
 
 const (
-	uploadURL     = "http://192.168.10.11:8080/images/" // 画像アップロード用のURL (handler.goのエンドポイント)
+	uploadURL     = "http://192.168.10.199:8080/images/" // 画像アップロード用のURL (handler.goのエンドポイント)
 	apiStoreURL   = "https://hv.home.arpa/hv/api/images/store"
 	apiMaxTimeURL = "https://hv.home.arpa/hv/api/images/max-timestamp"
 )
